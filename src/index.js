@@ -1,5 +1,10 @@
 "use strict";
 
+/**
+ * @module transito
+ * @author Rein Van Oyen
+ */
+
 const Transito = {
   opts: {
     preload: true,
@@ -9,6 +14,15 @@ const Transito = {
   },
   cached: {},
   eventListeners: {},
+
+  /**
+   * Enable transito
+   * @param  {String} base - The base url
+   * @param  {String} containerElementSelector - The selector to find the element in which to replace the content to (and from)
+   * @param  {String} triggerSelector - The selector to find the elements on which to click to trigger a page transition
+   * @param  {Object} opts - An object with the options and their values
+   * @return {void}
+   */
   install(base, containerElementSelector, triggerSelector = 'a', opts = {}) {
 
     Transito.base = base;
@@ -29,6 +43,13 @@ const Transito = {
       Transito.route();
     };
   },
+
+  /**
+   * Trigger an internal event by name
+   * @param  {String} eventName - The name of the event to trigger
+   * @param  {Object} event - The event (which can contain any data you want)
+   * @return {void}
+   */
   trigger(eventName, event = {}) {
     if (Transito.eventListeners[eventName]) {
       Transito.eventListeners[eventName].forEach( cb => {
@@ -36,6 +57,13 @@ const Transito = {
       });
     }
   },
+
+  /**
+   * Register an event listener
+   * @param  {String} eventName - The name of the event you wish to listen to
+   * @param  {Object} event - The event (which can contain any data you want)
+   * @return {void}
+   */
   on(eventName, cb) {
     if (!Transito.eventListeners[eventName]) {
       Transito.eventListeners[eventName] = [];
