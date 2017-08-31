@@ -1,0 +1,42 @@
+{
+  "name": "transito",
+  "version": "0.0.1",
+  "description": "Page transitions made easy",
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "babel src --presets babel-preset-es2015 --out-dir dist",
+    "prepublish": "npm run build",
+    "test": "mocha --compilers js:babel-core/register"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.24.1",
+    "babel-preset-es2015": "^6.24.1",
+    "babelify": "^7.3.0",
+    "brfs": "^1.4.3",
+    "browser-sync": "^2.18.8",
+    "browserify": "^14.1.0",
+    "del": "^2.2.2",
+    "expect.js": "^0.3.1",
+    "gulp": "^3.9.1",
+    "gulp-uglify": "^2.1.2",
+    "gutil": "^1.6.4",
+    "jquery": "^3.1.1",
+    "lodash.assign": "^4.2.0",
+    "mocha": "^3.5.0",
+    "pump": "^1.0.2",
+    "vinyl-buffer": "^1.0.0",
+    "vinyl-source-stream": "^1.1.0",
+    "watchify": "^3.9.0"
+  },
+  "keywords": [
+    "transition",
+    "ajax",
+    "transito",
+    "animation"
+  ],
+  "author": "Rein van Oyen",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/reinvanoyen/transito.git"
+  }
+}
