@@ -11,5 +11,10 @@ Transito.on('preload', e => {
 });
 
 Transito.on('postload', e => {
-  console.log(e);
+
+  const classes = e.response.match(/body\sclass=['|"]([^'|"]*)['|"]/);
+
+  if( classes ) {
+    console.log( classes );
+  }
 });

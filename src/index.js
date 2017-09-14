@@ -206,7 +206,8 @@ const Transito = {
 
     Transito.trigger('postload', {
       currentPath: Transito.currentRequest.path,
-      oldPath: Transito.oldRequest.path
+      oldPath: Transito.oldRequest.path,
+      response: htmlString
     });
   }
 };
