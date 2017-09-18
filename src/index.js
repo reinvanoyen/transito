@@ -183,6 +183,11 @@ const Transito = {
   },
   swapHtml(htmlString) {
 
+    const title = htmlString.match(/<title[^>]*>([^<]+)<\/title>/);
+    if (title) {
+      document.title = title[1];
+    }
+
     const body = /<body.*?>([\s\S]*)<\/body>/.exec(htmlString)[1];
     const tempContainer = document.createElement('div');
     tempContainer.innerHTML = body;
