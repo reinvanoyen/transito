@@ -139,7 +139,9 @@ const Transito = {
         setTimeout(() => {
 
           Transito.swapHtml(html);
-          document.body.classList.remove(Transito.opts.classLoading);
+          requestAnimationFrame(() => {
+            document.body.classList.remove(Transito.opts.classLoading);
+          });
 
           Transito.ready = true;
 

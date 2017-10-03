@@ -1,0 +1,15 @@
+body
+{
+	background-color: gray;
+}
+
+#wrapper
+{
+	opacity: 1;
+	transition: opacity .4s linear;
+}
+
+body.loading #wrapper
+{
+	opacity: 0;
+}
