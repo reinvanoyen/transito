@@ -1,10 +1,11 @@
 "use strict";
 
-import Transito from '../src/index';
+import { Transito, PreloadImagesPlugin } from '../src/index';
 
 const base = document.querySelector('base').getAttribute('href');
 
 Transito.install(base, 'body', 'a');
+Transito.installPlugin(PreloadImagesPlugin);
 
 Transito.on('preload', e => {
   console.log(e);

@@ -1,5 +1,7 @@
 "use strict";
 
+import PreloadImagesPlugin from "./plugins/preload-images";
+
 /**
  * @module transito
  * @author Rein Van Oyen
@@ -12,6 +14,7 @@ const Transito = {
     minDuration: 800,
     classLoading: 'loading'
   },
+  promises: [],
   cached: {},
   eventListeners: {},
 
@@ -42,6 +45,9 @@ const Transito = {
     window.onpopstate = e => {
       Transito.route();
     };
+  },
+  installPlugin(plugin) {
+    plugin.install(Transito);
   },
 
   /**
@@ -130,22 +136,31 @@ const Transito = {
 
       Transito.load(Transito.newRequest.path, html => {
 
-        Transito.then = Date.now();
-        Transito.duration = ( Transito.then - Transito.now );
+        Transito.trigger('receivedresponse', {
+            response: html,
+            currentPath: Transito.currentRequest.path,
+            newPath: Transito.newRequest.path
+        });
 
-        Transito.oldRequest = Transito.currentRequest;
-        Transito.currentRequest = Transito.newRequest;
+        Promise.all(Transito.promises).then(() => {
 
-        setTimeout(() => {
+          Transito.then = Date.now();
+          Transito.duration = ( Transito.then - Transito.now );
 
-          Transito.swapHtml(html);
-          requestAnimationFrame(() => {
-            document.body.classList.remove(Transito.opts.classLoading);
-          });
+          Transito.oldRequest = Transito.currentRequest;
+          Transito.currentRequest = Transito.newRequest;
 
-          Transito.ready = true;
+          setTimeout(() => {
 
-        }, Math.max(0, Transito.opts.minDuration - Transito.duration));
+              Transito.swapHtml(html);
+              requestAnimationFrame(() => {
+                  document.body.classList.remove(Transito.opts.classLoading);
+              });
+
+              Transito.ready = true;
+
+          }, Math.max(0, Transito.opts.minDuration - Transito.duration));
+        });
       });
 
     } else if (Transito.currentRequest.hash !== Transito.newRequest.hash) {
@@ -216,7 +231,16 @@ const Transito = {
       oldPath: Transito.oldRequest.path,
       response: htmlString
     });
+  },
+  emptyPromises() {
+    Transito.promises = [];
+  },
+  setPromises(promises = []) {
+    Transito.promises = promises;
+  },
+  addPromise(promise) {
+    Transito.promises.push(promise);
   }
 };
 
-export default Transito;
+export { Transito, PreloadImagesPlugin };

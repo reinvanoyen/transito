@@ -3,13 +3,20 @@ body
 	background-color: gray;
 }
 
-#wrapper
+body.loading #wrapper
 {
+	opacity: 0;
+}
+
+img
+{
+	display: block;
+	width: 500px;
 	opacity: 1;
 	transition: opacity .4s linear;
 }
 
-body.loading #wrapper
+body.loading img
 {
 	opacity: 0;
 }
