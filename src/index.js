@@ -1,6 +1,7 @@
 "use strict";
 
 import PreloadImagesPlugin from "./plugins/preload-images";
+import BodyClassesPlugin from "./plugins/body-classes";
 
 /**
  * @module transito
@@ -243,4 +244,4 @@ const Transito = {
   }
 };
 
-export { Transito, PreloadImagesPlugin };
+export { Transito, PreloadImagesPlugin, BodyClassesPlugin };
