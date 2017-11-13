@@ -48,8 +48,10 @@ class Transito {
     this.id = transitoId;
     transitoId++;
 
+    window.history.replaceState({transitoId: this.id}, '', this.currentRequest.path);
+
     window.onpopstate = e => {
-      if ('transitoId' in e.state && e.state.transitoId === this.id) {
+      if (e.state && e.state.transitoId === this.id) {
         this.route();
       }
     };
@@ -126,7 +128,7 @@ class Transito {
   goTo(path) {
 
     if (this.ready) {
-      window.history.pushState({transitoId: this.id}, null, path);
+      window.history.pushState({transitoId: this.id}, '', path);
       this.route();
     }
   }
@@ -165,12 +167,12 @@ class Transito {
 
           setTimeout(() => {
 
-	          this.swapHtml(html);
+              this.swapHtml(html);
               requestAnimationFrame(() => {
                   document.body.classList.remove(this.opts.classLoading);
               });
 
-	          this.ready = true;
+              this.ready = true;
 
           }, Math.max(0, this.opts.minDuration - this.duration));
         });
