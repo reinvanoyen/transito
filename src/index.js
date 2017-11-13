@@ -24,7 +24,8 @@ class Transito {
       preload: true,
       cache: true,
       minDuration: 800,
-      classLoading: 'loading'
+      classLoading: 'loading',
+      originContainerElementSelector: containerElementSelector
     };
     this.promises = [];
     this.cached = {};
@@ -224,10 +225,10 @@ class Transito {
     tempContainer.innerHTML = body;
 
     let contents;
-    if (this.containerElementSelector === 'body') {
+    if (this.opts.originContainerElementSelector === 'body') {
       contents = tempContainer;
     } else {
-      contents = tempContainer.querySelector(this.containerElementSelector);
+      contents = tempContainer.querySelector(this.opts.originContainerElementSelector);
     }
 
     while (this.containerElement.firstChild) {
