@@ -9,6 +9,7 @@ import BodyClassesPlugin from "./plugins/body-classes";
  */
 
 let transitoId = 0;
+let currentRequest, newRequest, oldRequest;
 
 class Transito {
 
@@ -36,9 +37,10 @@ class Transito {
     this.triggerSelector = triggerSelector;
     this.opts = Object.assign(this.opts, opts);
 
-    this.currentRequest = this.parseRequest();
-    this.newRequest = null;
-    this.oldRequest = null;
+    currentRequest = this.parseRequest();
+    newRequest = null;
+    oldRequest = null;
+
     this.containerElement = document.querySelector(this.containerElementSelector);
 
     this.ready = true;
@@ -48,7 +50,7 @@ class Transito {
     this.id = transitoId;
     transitoId++;
 
-    window.history.replaceState({transitoId: this.id}, '', this.currentRequest.path);
+    window.history.replaceState({transitoId: this.id}, '', currentRequest.path);
 
     window.addEventListener( 'popstate', e => {
       if (e.state && e.state.transitoId === this.id) {
@@ -136,25 +138,25 @@ class Transito {
   route() {
 
     this.now = Date.now();
-    this.newRequest = this.parseRequest();
+    newRequest = this.parseRequest();
 
-    if (this.currentRequest.path !== this.newRequest.path) {
+    if (currentRequest.path !== newRequest.path) {
 
       this.trigger('preload', {
-        currentPath: this.currentRequest.path,
-        newPath: this.newRequest.path
+        currentPath: currentRequest.path,
+        newPath: newRequest.path
       });
 
       this.ready = false;
 
       document.body.classList.add(this.opts.classLoading);
 
-      this.load(this.newRequest.path, html => {
+      this.load(newRequest.path, html => {
 
         this.trigger('receivedresponse', {
             response: html,
-            currentPath: this.currentRequest.path,
-            newPath: this.newRequest.path
+            currentPath: currentRequest.path,
+            newPath: newRequest.path
         });
 
         Promise.all(this.promises).then(() => {
@@ -162,8 +164,8 @@ class Transito {
           this.then = Date.now();
           this.duration = ( this.then - this.now );
 
-          this.oldRequest = this.currentRequest;
-          this.currentRequest = this.newRequest;
+          oldRequest = currentRequest;
+          currentRequest = newRequest;
 
           setTimeout(() => {
 
@@ -178,7 +180,7 @@ class Transito {
         });
       });
 
-    } else if (this.currentRequest.hash !== this.newRequest.hash) {
+    } else if (currentRequest.hash !== newRequest.hash) {
 
       this.ready = false;
 
@@ -244,8 +246,8 @@ class Transito {
     this.bindEvents();
 
     this.trigger('postload', {
-      currentPath: this.currentRequest.path,
-      oldPath: this.oldRequest.path,
+      currentPath: currentRequest.path,
+      oldPath: oldRequest.path,
       response: htmlString
     });
   }
