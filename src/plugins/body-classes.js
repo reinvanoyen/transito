@@ -2,21 +2,21 @@
 
 const BodyClasses = {
 
-	install(Transito) {
+	install(transito) {
 
-		Transito.on('postload', e => {
+	transito.on('postload', e => {
 
-			const classes = e.response.match(/body\sclass=['|"]([^'|"]*)['|"]/);
+		const classes = e.response.match(/body\sclass=['|"]([^'|"]*)['|"]/);
 
-			document.body.className = '';
+		document.body.className = '';
 
-			if (classes) {
+		if (classes) {
 
-				classes[ 1 ].split(' ').forEach(className => {
-					document.body.classList.add(className);
-				});
-			}
-		});
+			classes[ 1 ].split(' ').forEach(className => {
+				document.body.classList.add(className);
+			});
+		}
+	});
 	}
 };
 

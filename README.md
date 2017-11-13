@@ -12,17 +12,17 @@ $ npm install transito
 ```javascript
 import Transito from 'transito';
 
-Transito.install('https://www.yourdomain.com', 'body', 'a');
+let transito = new Transito('https://www.yourdomain.com', 'body', 'a');
 
-Transito.on('progress', e => {
+transito.on('progress', e => {
   console.log(e);
 });
 
-Transito.on('postload', e => {
+transito.on('postload', e => {
   console.log(e);
 });
 
-Transito.on('preload', e => {
+transito.on('preload', e => {
   console.log(e);
 });
 ```
@@ -30,7 +30,7 @@ Transito.on('preload', e => {
 ### Basic example with options
 
 ```javascript
-Transito.install('https://www.yourdomain.com', '#wrapper', 'a', {
+new Transito('https://www.yourdomain.com', '#wrapper', 'a', {
   preload: false, // disables preloading on mouseover (default = true)
   cache: false, // disables caching of responses (default = true)
   minDuration: 2000, // sets minimum transition duration to 2 seconds (default = 800)

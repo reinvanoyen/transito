@@ -8,48 +8,55 @@ import BodyClassesPlugin from "./plugins/body-classes";
  * @author Rein Van Oyen
  */
 
-const Transito = {
-  opts: {
-    preload: true,
-    cache: true,
-    minDuration: 800,
-    classLoading: 'loading'
-  },
-  promises: [],
-  cached: {},
-  eventListeners: {},
+let transitoId = 0;
+
+class Transito {
 
   /**
-   * Enable transito
    * @param  {String} base - The base url
    * @param  {String} containerElementSelector - The selector to find the element in which to replace the content to (and from)
    * @param  {String} triggerSelector - The selector to find the elements on which to click to trigger a page transition
    * @param  {Object} opts - An object with the options and their values
    * @return {void}
    */
-  install(base, containerElementSelector, triggerSelector = 'a', opts = {}) {
+  constructor(base, containerElementSelector, triggerSelector = 'a', opts = {} ) {
+    this.opts = {
+      preload: true,
+      cache: true,
+      minDuration: 800,
+      classLoading: 'loading'
+    };
+    this.promises = [];
+    this.cached = {};
+    this.eventListeners = {};
 
-    Transito.base = base;
-    Transito.containerElementSelector = containerElementSelector;
-    Transito.triggerSelector = triggerSelector;
-    Transito.opts = Object.assign(Transito.opts, opts);
+    this.base = base;
+    this.containerElementSelector = containerElementSelector;
+    this.triggerSelector = triggerSelector;
+    this.opts = Object.assign(this.opts, opts);
 
-    Transito.currentRequest = Transito.parseRequest();
-    Transito.newRequest = null;
-    Transito.oldRequest = null;
-    Transito.containerElement = document.querySelector(Transito.containerElementSelector);
+    this.currentRequest = this.parseRequest();
+    this.newRequest = null;
+    this.oldRequest = null;
+    this.containerElement = document.querySelector(this.containerElementSelector);
 
-    Transito.ready = true;
+    this.ready = true;
 
-    Transito.bindEvents(true);
+    this.bindEvents(true);
+
+    this.id = transitoId;
+    transitoId++;
 
     window.onpopstate = e => {
-      Transito.route();
+      if ('transitoId' in e.state && e.state.transitoId === this.id) {
+        this.route();
+      }
     };
-  },
+  }
+
   installPlugin(plugin) {
-    plugin.install(Transito);
-  },
+    plugin.install(this);
+  }
 
   /**
    * Trigger an internal event by name
@@ -58,12 +65,12 @@ const Transito = {
    * @return {void}
    */
   trigger(eventName, event = {}) {
-    if (Transito.eventListeners[eventName]) {
-      Transito.eventListeners[eventName].forEach( cb => {
+    if (this.eventListeners[eventName]) {
+      this.eventListeners[eventName].forEach( cb => {
         cb(event);
       });
     }
-  },
+  }
 
   /**
    * Register an event listener
@@ -72,116 +79,121 @@ const Transito = {
    * @return {void}
    */
   on(eventName, cb) {
-    if (!Transito.eventListeners[eventName]) {
-      Transito.eventListeners[eventName] = [];
+    if (!this.eventListeners[eventName]) {
+      this.eventListeners[eventName] = [];
     }
-    Transito.eventListeners[eventName].push(cb);
-  },
+    this.eventListeners[eventName].push(cb);
+  }
+
   bindEvents(initial = false) {
 
     let triggerEls;
 
     if (initial) {
-      triggerEls = document.body.querySelectorAll(Transito.triggerSelector);
+      triggerEls = document.body.querySelectorAll(this.triggerSelector);
     } else {
-      triggerEls = Transito.containerElement.querySelectorAll(Transito.triggerSelector);
+      triggerEls = this.containerElement.querySelectorAll(this.triggerSelector);
     }
 
     triggerEls.forEach(el => {
       el.addEventListener('click', e => {
-        Transito.goTo(e.currentTarget.getAttribute('href'));
+        this.goTo(e.currentTarget.getAttribute('href'));
         e.preventDefault();
       });
     });
 
-    if (Transito.opts.preload) {
+    if (this.opts.preload) {
       triggerEls.forEach(el => {
         el.addEventListener('mouseover', e => {
-          Transito.load(e.currentTarget.getAttribute('href'), html => {});
+          this.load(e.currentTarget.getAttribute('href'), html => {});
         });
       });
     }
-  },
+  }
+
   parseRequest() {
 
-    const request = String(document.location).substr(Transito.base.length);
+    const request = String(document.location).substr(this.base.length);
     const parts = request.split( '#' );
 
     return {
       path: parts[0],
       hash: ( parts[1] ? parts[1] : null )
     };
-  },
+  }
+
   goTo(path) {
 
-    if (Transito.ready) {
-      window.history.pushState(true, null, path);
-      Transito.route();
+    if (this.ready) {
+      window.history.pushState({transitoId: this.id}, null, path);
+      this.route();
     }
-  },
+  }
+
   route() {
 
-    Transito.now = Date.now();
-    Transito.newRequest = Transito.parseRequest();
+    this.now = Date.now();
+    this.newRequest = this.parseRequest();
 
-    if (Transito.currentRequest.path !== Transito.newRequest.path) {
+    if (this.currentRequest.path !== this.newRequest.path) {
 
-      Transito.trigger('preload', {
-        currentPath: Transito.currentRequest.path,
-        newPath: Transito.newRequest.path
+      this.trigger('preload', {
+        currentPath: this.currentRequest.path,
+        newPath: this.newRequest.path
       });
 
-      Transito.ready = false;
+      this.ready = false;
 
-      document.body.classList.add(Transito.opts.classLoading);
+      document.body.classList.add(this.opts.classLoading);
 
-      Transito.load(Transito.newRequest.path, html => {
+      this.load(this.newRequest.path, html => {
 
-        Transito.trigger('receivedresponse', {
+        this.trigger('receivedresponse', {
             response: html,
-            currentPath: Transito.currentRequest.path,
-            newPath: Transito.newRequest.path
+            currentPath: this.currentRequest.path,
+            newPath: this.newRequest.path
         });
 
-        Promise.all(Transito.promises).then(() => {
+        Promise.all(this.promises).then(() => {
 
-          Transito.then = Date.now();
-          Transito.duration = ( Transito.then - Transito.now );
+          this.then = Date.now();
+          this.duration = ( this.then - this.now );
 
-          Transito.oldRequest = Transito.currentRequest;
-          Transito.currentRequest = Transito.newRequest;
+          this.oldRequest = this.currentRequest;
+          this.currentRequest = this.newRequest;
 
           setTimeout(() => {
 
-              Transito.swapHtml(html);
+	          this.swapHtml(html);
               requestAnimationFrame(() => {
-                  document.body.classList.remove(Transito.opts.classLoading);
+                  document.body.classList.remove(this.opts.classLoading);
               });
 
-              Transito.ready = true;
+	          this.ready = true;
 
-          }, Math.max(0, Transito.opts.minDuration - Transito.duration));
+          }, Math.max(0, this.opts.minDuration - this.duration));
         });
       });
 
-    } else if (Transito.currentRequest.hash !== Transito.newRequest.hash) {
+    } else if (this.currentRequest.hash !== this.newRequest.hash) {
 
-      Transito.ready = false;
+      this.ready = false;
 
       // @TODO scroll to hash
     }
-  },
+  }
+
   load(path, cb) {
 
-    if (Transito.opts.cache && Transito.cached[path]) {
-      cb(Transito.cached[path]);
+    if (this.opts.cache && this.cached[path]) {
+      cb(this.cached[path]);
       return;
     }
 
     const req = new XMLHttpRequest();
 
     req.onprogress = e => {
-      Transito.trigger('progress', {
+      this.trigger('progress', {
         loaded: e.loaded,
         total: e.total
       });
@@ -189,8 +201,8 @@ const Transito = {
 
     req.onreadystatechange = () => {
       if( req.readyState == 4 && req.status == 200 ) {
-        if (Transito.opts.cache) {
-          Transito.cached[path] = req.responseText;
+        if (this.opts.cache) {
+          this.cached[path] = req.responseText;
         }
         cb(req.responseText);
       }
@@ -198,7 +210,8 @@ const Transito = {
 
     req.open( 'GET', path, true );
     req.send( null );
-  },
+  }
+
   swapHtml(htmlString) {
 
     const title = htmlString.match(/<title[^>]*>([^<]+)<\/title>/);
@@ -211,37 +224,40 @@ const Transito = {
     tempContainer.innerHTML = body;
 
     let contents;
-    if (Transito.containerElementSelector === 'body') {
+    if (this.containerElementSelector === 'body') {
       contents = tempContainer;
     } else {
-      contents = tempContainer.querySelector(Transito.containerElementSelector);
+      contents = tempContainer.querySelector(this.containerElementSelector);
     }
 
-    while (Transito.containerElement.firstChild) {
-      Transito.containerElement.removeChild(Transito.containerElement.firstChild);
+    while (this.containerElement.firstChild) {
+      this.containerElement.removeChild(this.containerElement.firstChild);
     }
 
     while (contents.childNodes.length > 0) {
-      Transito.containerElement.appendChild(contents.childNodes[0]);
+      this.containerElement.appendChild(contents.childNodes[0]);
     }
 
-    Transito.bindEvents();
+    this.bindEvents();
 
-    Transito.trigger('postload', {
-      currentPath: Transito.currentRequest.path,
-      oldPath: Transito.oldRequest.path,
+    this.trigger('postload', {
+      currentPath: this.currentRequest.path,
+      oldPath: this.oldRequest.path,
       response: htmlString
     });
-  },
-  emptyPromises() {
-    Transito.promises = [];
-  },
-  setPromises(promises = []) {
-    Transito.promises = promises;
-  },
-  addPromise(promise) {
-    Transito.promises.push(promise);
   }
-};
+
+  emptyPromises() {
+    this.promises = [];
+  }
+
+  setPromises(promises = []) {
+    this.promises = promises;
+  }
+
+  addPromise(promise) {
+    this.promises.push(promise);
+  }
+}
 
 export { Transito, PreloadImagesPlugin, BodyClassesPlugin };

@@ -1,11 +1,11 @@
 "use strict";
 
 const PreloadImages = {
-	install(Transito) {
+	install(transito) {
 
-		Transito.on('receivedresponse', e => {
+		transito.on('receivedresponse', e => {
 
-			Transito.emptyPromises();
+			transito.emptyPromises();
 
 			const html = e.response;
 			const body = /<body.*?>([\s\S]*)<\/body>/.exec(html)[1];
@@ -16,7 +16,7 @@ const PreloadImages = {
 
 			for (let i = 0; i < images.length; i++) {
 
-				Transito.addPromise( new Promise(resolve => {
+				transito.addPromise( new Promise(resolve => {
 
 					const img = new Image();
 					img.onload = resolve;

@@ -1,6 +1,6 @@
 {
   "name": "transito",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "Page transitions made easy",
   "main": "./dist/index.js",
   "scripts": {
