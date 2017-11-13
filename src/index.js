@@ -50,11 +50,11 @@ class Transito {
 
     window.history.replaceState({transitoId: this.id}, '', this.currentRequest.path);
 
-    window.onpopstate = e => {
+    window.addEventListener( 'popstate', e => {
       if (e.state && e.state.transitoId === this.id) {
         this.route();
       }
-    };
+    } );
   }
 
   installPlugin(plugin) {
