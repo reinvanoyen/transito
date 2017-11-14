@@ -6,7 +6,8 @@ const base = document.querySelector('base').getAttribute('href');
 
 // popup
 let transito2 = new Transito(base, '#popup', 'a.popup', {
-	originContainerElementSelector: '#content'
+	originContainerElementSelector: '#content',
+	affectHistory: false
 });
 
 transito2.installPlugin(PreloadImagesPlugin);
