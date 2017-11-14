@@ -26,7 +26,8 @@ class Transito {
       cache: true,
       minDuration: 800,
       classLoading: 'loading',
-      originContainerElementSelector: containerElementSelector
+      originContainerElementSelector: containerElementSelector,
+      affectHistory: true
     };
     this.promises = [];
     this.cached = {};
@@ -50,13 +51,15 @@ class Transito {
     this.id = transitoId;
     transitoId++;
 
-    window.history.replaceState({transitoId: this.id}, '', currentRequest.path);
+    if (this.opts.affectHistory) {
+      window.history.replaceState({transitoId: this.id}, '', currentRequest.path);
 
-    window.addEventListener( 'popstate', e => {
-      if (e.state && e.state.transitoId === this.id) {
-        this.route();
-      }
-    } );
+      window.addEventListener( 'popstate', e => {
+        if (e.state && e.state.transitoId === this.id) {
+          this.route();
+        }
+      } );
+    }
   }
 
   installPlugin(plugin) {
@@ -130,15 +133,22 @@ class Transito {
   goTo(path) {
 
     if (this.ready) {
-      window.history.pushState({transitoId: this.id}, '', path);
-      this.route();
+      if (this.opts.affectHistory) {
+        window.history.pushState({transitoId: this.id}, '', path);
+        this.route();
+      } else {
+        this.route({
+          path: path,
+          hash: null
+        });
+      }
     }
   }
 
-  route() {
+  route(request = null) {
 
     this.now = Date.now();
-    newRequest = this.parseRequest();
+    newRequest = request || this.parseRequest();
 
     if (currentRequest.path !== newRequest.path) {
 
