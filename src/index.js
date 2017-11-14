@@ -54,11 +54,11 @@ class Transito {
     if (this.opts.affectHistory) {
       window.history.replaceState({transitoId: this.id}, '', currentRequest.path);
 
-      window.addEventListener( 'popstate', e => {
+      window.addEventListener('popstate', e => {
         if (e.state && e.state.transitoId === this.id) {
           this.route();
         }
-      } );
+      });
     }
   }
 
@@ -150,7 +150,7 @@ class Transito {
     this.now = Date.now();
     newRequest = request || this.parseRequest();
 
-    if (currentRequest.path !== newRequest.path) {
+    if (!this.opts.affectHistory || currentRequest.path !== newRequest.path) {
 
       this.trigger('preload', {
         currentPath: currentRequest.path,
