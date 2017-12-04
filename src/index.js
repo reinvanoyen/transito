@@ -103,19 +103,18 @@ class Transito {
       triggerEls = this.containerElement.querySelectorAll(this.triggerSelector);
     }
 
-    triggerEls.forEach(el => {
+    for (let i = 0; i < triggerEls.length; i++) {
+      let el = triggerEls[i];
       el.addEventListener('click', e => {
-        this.goTo(e.currentTarget.getAttribute('href'));
-        e.preventDefault();
+          this.goTo(e.currentTarget.getAttribute('href'));
+          e.preventDefault();
       });
-    });
 
-    if (this.opts.preload) {
-      triggerEls.forEach(el => {
+      if (this.opts.preload) {
         el.addEventListener('mouseover', e => {
-          this.load(e.currentTarget.getAttribute('href'), html => {});
+            this.load(e.currentTarget.getAttribute('href'), html => {});
         });
-      });
+      }
     }
   }
 
