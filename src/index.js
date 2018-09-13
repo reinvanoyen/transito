@@ -121,11 +121,11 @@ class Transito {
   parseRequest() {
 
     const request = String(document.location).substr(this.base.length);
-    const parts = request.split( '#' );
+    const parts = request.split('#');
 
     return {
       path: parts[0],
-      hash: ( parts[1] ? parts[1] : null )
+      hash: (parts[1] ? parts[1] : null)
     };
   }
 
@@ -148,6 +148,8 @@ class Transito {
 
     this.now = Date.now();
     newRequest = request || this.parseRequest();
+
+    console.log(newRequest);
 
     if (!this.opts.affectHistory || currentRequest.path !== newRequest.path) {
 
@@ -179,8 +181,13 @@ class Transito {
           setTimeout(() => {
 
               this.swapHtml(html);
+
               requestAnimationFrame(() => {
-                  document.body.classList.remove(this.opts.classLoading);
+                document.body.classList.remove(this.opts.classLoading);
+
+                if (currentRequest.hash) {
+                  this.scrollToElement(currentRequest.hash);
+                }
               });
 
               this.ready = true;
@@ -192,9 +199,15 @@ class Transito {
     } else if (currentRequest.hash !== newRequest.hash) {
 
       this.ready = false;
-
-      // @TODO scroll to hash
+      this.scrollToElement(newRequest.hash);
+      this.ready = true;
     }
+  }
+
+  scrollToElement(anchor) {
+
+    let hashEl = document.getElementById(anchor);
+    hashEl.scrollIntoView();
   }
 
   load(path, cb) {
@@ -214,7 +227,7 @@ class Transito {
     };
 
     req.onreadystatechange = () => {
-      if( req.readyState == 4 && req.status == 200 ) {
+      if (req.readyState == 4 && req.status == 200) {
         if (this.opts.cache) {
           this.cached[path] = req.responseText;
         }
