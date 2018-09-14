@@ -20,7 +20,12 @@ class Transito {
    * @param  {Object} opts - An object with the options and their values
    * @return {void}
    */
-  constructor(base, containerElementSelector, triggerSelector = 'a', opts = {} ) {
+  constructor(base, containerElementSelector, triggerSelector = 'a', opts = {}) {
+
+    this.base = base;
+    this.containerElementSelector = containerElementSelector;
+    this.triggerSelector = triggerSelector;
+
     this.opts = {
       preload: true,
       cache: true,
@@ -29,14 +34,11 @@ class Transito {
       originContainerElementSelector: containerElementSelector,
       affectHistory: true
     };
+    this.opts = Object.assign(this.opts, opts);
+
     this.promises = [];
     this.cached = {};
     this.eventListeners = {};
-
-    this.base = base;
-    this.containerElementSelector = containerElementSelector;
-    this.triggerSelector = triggerSelector;
-    this.opts = Object.assign(this.opts, opts);
 
     currentRequest = this.parseRequest();
     newRequest = null;
@@ -52,7 +54,14 @@ class Transito {
     transitoId++;
 
     if (this.opts.affectHistory) {
-      window.history.replaceState({transitoId: this.id}, '', currentRequest.path);
+
+      let historyPath = currentRequest.path;
+
+      if (currentRequest.hash) {
+        historyPath += '#'+currentRequest.hash;
+      }
+
+      window.history.replaceState({transitoId: this.id}, '', historyPath);
 
       window.addEventListener('popstate', e => {
         if (e.state && e.state.transitoId === this.id) {
@@ -149,8 +158,6 @@ class Transito {
     this.now = Date.now();
     newRequest = request || this.parseRequest();
 
-    console.log(newRequest);
-
     if (!this.opts.affectHistory || currentRequest.path !== newRequest.path) {
 
       this.trigger('preload', {
@@ -235,13 +242,14 @@ class Transito {
       }
     };
 
-    req.open( 'GET', path, true );
-    req.send( null );
+    req.open('GET', path, true);
+    req.send(null);
   }
 
   swapHtml(htmlString) {
 
     const title = htmlString.match(/<title[^>]*>([^<]+)<\/title>/);
+
     if (title) {
       document.title = title[1];
     }
@@ -287,4 +295,4 @@ class Transito {
   }
 }
 
-export { Transito, PreloadImagesPlugin, BodyClassesPlugin };
+export {Transito, PreloadImagesPlugin, BodyClassesPlugin};

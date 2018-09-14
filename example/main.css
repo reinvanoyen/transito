@@ -3,6 +3,11 @@ body
 	background-color: gray;
 }
 
+#wrapper
+{
+	transition: opacity .4s;
+}
+
 body.loading #wrapper
 {
 	opacity: 0;
