@@ -5,7 +5,7 @@ import { Transito, PreloadImagesPlugin, BodyClassesPlugin } from '../src/index';
 const base = document.querySelector('base').getAttribute('href');
 
 // main
-let transito = new Transito(base, '#wrapper', 'a');
+let transito = new Transito(base, '#wrapper, #top', 'a');
 
 transito.installPlugin(PreloadImagesPlugin);
 transito.installPlugin(BodyClassesPlugin);

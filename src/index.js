@@ -44,7 +44,7 @@ class Transito {
     newRequest = null;
     oldRequest = null;
 
-    this.containerElement = document.querySelector(this.containerElementSelector);
+    this.containerElement = document.querySelectorAll(this.containerElementSelector);
 
     this.ready = true;
 
@@ -109,7 +109,10 @@ class Transito {
     if (initial) {
       triggerEls = document.body.querySelectorAll(this.triggerSelector);
     } else {
-      triggerEls = this.containerElement.querySelectorAll(this.triggerSelector);
+      triggerEls = [];
+      for (let i = 0; i < this.containerElement.length; i++) {
+        triggerEls.push(...this.containerElement[i].querySelectorAll(this.triggerSelector));
+      }
     }
 
     for (let i = 0; i < triggerEls.length; i++) {
@@ -118,7 +121,6 @@ class Transito {
           this.goTo(e.currentTarget.getAttribute('href'));
           e.preventDefault();
       });
-
       if (this.opts.preload) {
         el.addEventListener('mouseover', e => {
             this.load(e.currentTarget.getAttribute('href'), html => {});
@@ -260,17 +262,21 @@ class Transito {
 
     let contents;
     if (this.opts.originContainerElementSelector === 'body') {
-      contents = tempContainer;
+      contents = [tempContainer]; // We create an array from the element, so we can handle it (mostly) like a NodeList
     } else {
-      contents = tempContainer.querySelector(this.opts.originContainerElementSelector);
+      contents = tempContainer.querySelectorAll(this.opts.originContainerElementSelector);
     }
 
-    while (this.containerElement.firstChild) {
-      this.containerElement.removeChild(this.containerElement.firstChild);
-    }
+    for (let i = 0; i < this.containerElement.length; i++) {
+      while (this.containerElement[i].firstChild) {
+        this.containerElement[i].removeChild(this.containerElement[i].firstChild);
+      }
 
-    while (contents.childNodes.length > 0) {
-      this.containerElement.appendChild(contents.childNodes[0]);
+      if (contents[i]) {
+        while (contents[i].childNodes.length > 0) {
+          this.containerElement[i].appendChild(contents[i].childNodes[0]);
+        }
+      }
     }
 
     this.bindEvents();
