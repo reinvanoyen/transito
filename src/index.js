@@ -192,11 +192,12 @@ class Transito {
               this.swapHtml(html);
 
               requestAnimationFrame(() => {
-                document.body.classList.remove(this.opts.classLoading);
-
-                if (currentRequest.hash) {
-                  this.scrollToElement(currentRequest.hash);
-                }
+                requestAnimationFrame(() => {
+                  document.body.classList.remove(this.opts.classLoading);
+                  if (currentRequest.hash) {
+                    this.scrollToElement(currentRequest.hash);
+                  }
+                });
               });
 
               this.ready = true;
@@ -214,7 +215,6 @@ class Transito {
   }
 
   scrollToElement(anchor) {
-
     let hashEl = document.getElementById(anchor);
     hashEl.scrollIntoView();
   }
@@ -268,14 +268,23 @@ class Transito {
     }
 
     for (let i = 0; i < this.containerElement.length; i++) {
+
       while (this.containerElement[i].firstChild) {
         this.containerElement[i].removeChild(this.containerElement[i].firstChild);
       }
 
       if (contents[i]) {
+
+        // // We create a document fragment to append all childs at once
+        let docFrag = new DocumentFragment();
+
         while (contents[i].childNodes.length > 0) {
-          this.containerElement[i].appendChild(contents[i].childNodes[0]);
+          // Add childnodes to document fragment
+          docFrag.appendChild(contents[i].childNodes[0]);
         }
+
+        // Append document fragment
+        this.containerElement[i].appendChild(docFrag);
       }
     }
 

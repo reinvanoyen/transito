@@ -3,25 +3,18 @@ body
 	background-color: gray;
 }
 
-#wrapper
+.block
 {
-	transition: opacity .4s;
+    display: block;
+    width: 150px;
+    height: 150px;
+    background-color: blue;
+    opacity: 1;
+	transition: opacity 1.25s;
 }
 
-body.loading #wrapper
+body.loading .block
 {
 	opacity: 0;
-}
-
-img
-{
-	display: block;
-	width: 500px;
-	opacity: 1;
-	transition: opacity .4s linear;
-}
-
-body.loading img
-{
-	opacity: 0;
+    transition-delay: 0s;
 }
