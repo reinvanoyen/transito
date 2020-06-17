@@ -2,6 +2,7 @@
 
 import PreloadImagesPlugin from "./plugins/preload-images";
 import BodyClassesPlugin from "./plugins/body-classes";
+import {decodeHtmlEntities} from "./util";
 
 /**
  * @module transito
@@ -253,7 +254,7 @@ class Transito {
     const title = htmlString.match(/<title[^>]*>([^<]+)<\/title>/);
 
     if (title) {
-      document.title = title[1];
+      document.title = decodeHtmlEntities(title[1]);
     }
 
     const body = /<body.*?>([\s\S]*)<\/body>/.exec(htmlString)[1];
