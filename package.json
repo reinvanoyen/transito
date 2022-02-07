@@ -1,6 +1,6 @@
 {
   "name": "transito",
-  "version": "0.1.10",
+  "version": "0.2.00",
   "description": "Page transitions made easy",
   "main": "./dist/transito.bundle.js",
   "scripts": {
