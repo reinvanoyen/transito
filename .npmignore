@@ -1,8 +1,9 @@
+.idea
+.DS_store
 /src
-/build
 /example
 /test
-.babelrc
 .gitignore
-gulpfile.js
-index.html
+webpack.config.js
+webpack-example.config.js
+README.md
