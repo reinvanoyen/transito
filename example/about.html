@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<base href="http://localhost:8000/example/" />
+	<base href="http://localhost:8080/example/" />
 	<title>Welcome!</title>
 	<link rel="stylesheet" href="main.css" />
 	<meta charset="UTF-8" />
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 	<meta name="robots" content="all" />
-	<meta name="author" content="Tallieu & Tallieu" />
+	<meta name="author" content="Rein Van Oyen" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
 </head>
 <body>
@@ -16,13 +16,14 @@
 </div>
 <div id="wrapper">
 	<ul>
-		<li><a href="index.html">Index</a></li>
-		<li><a href="about.html">About</a></li>
+        <li><a href="index.html">Index</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="tab1.html" class="open-tab">Tab 1</a></li>
+        <li><a href="tab2.html" class="open-tab">Tab 2</a></li>
 	</ul>
 	<div class="block"></div>
-	<div class="block"></div>
-	<div class="block"></div>
 </div>
+<div class="tabs"></div>
 </body>
-<script src="../build/js/bundle.js" type="text/javascript"></script>
+<script src="./build/index.js" type="text/javascript"></script>
 </html>

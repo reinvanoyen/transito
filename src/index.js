@@ -33,19 +33,28 @@ class Transito {
       minDuration: 800,
       classLoading: 'loading',
       originContainerElementSelector: containerElementSelector,
-      affectHistory: true
+      affectHistory: true,
+      
+      // Tab functionality
+      tabTriggerSelector: null,
+      tabElementSelector: null,
+      tabContainerElementSelector: null,
+      classActiveTab: 'active-tab'
     };
+    
     this.opts = Object.assign(this.opts, opts);
 
     this.promises = [];
     this.cached = {};
     this.eventListeners = {};
+    this.tabs = {};
 
     currentRequest = this.parseRequest();
     newRequest = null;
     oldRequest = null;
 
     this.containerElement = document.querySelectorAll(this.containerElementSelector);
+    this.tabsContainerElement = document.querySelector(this.opts.tabContainerElementSelector);
 
     this.ready = true;
 
@@ -54,26 +63,7 @@ class Transito {
     this.id = transitoId;
     transitoId++;
 
-    if (this.opts.affectHistory) {
-
-      let historyPath = currentRequest.path;
-
-      if (currentRequest.hash) {
-        historyPath += '#'+currentRequest.hash;
-      }
-
-      window.history.replaceState({transitoId: this.id}, '', historyPath);
-
-      window.addEventListener('popstate', e => {
-        if (e.state && e.state.transitoId === this.id) {
-          this.route();
-        }
-      });
-    }
-  }
-
-  installPlugin(plugin) {
-    plugin.install(this);
+    this.initHistory();
   }
 
   /**
@@ -90,32 +80,47 @@ class Transito {
     }
   }
 
-  /**
-   * Register an event listener
-   * @param  {String} eventName - The name of the event you wish to listen to
-   * @param  {Object} event - The event (which can contain any data you want)
-   * @return {void}
-   */
+    /**
+     * Register an event listener
+     * @param eventName
+     * @param cb
+     */
   on(eventName, cb) {
     if (!this.eventListeners[eventName]) {
       this.eventListeners[eventName] = [];
     }
     this.eventListeners[eventName].push(cb);
   }
-
+  
   bindEvents(initial = false) {
 
     let triggerEls;
+    let tabTriggerEls;
 
     if (initial) {
+        
       triggerEls = document.body.querySelectorAll(this.triggerSelector);
+      tabTriggerEls = this.opts.tabTriggerSelector ? document.body.querySelectorAll(this.opts.tabTriggerSelector) : null;
+      
     } else {
+        
       triggerEls = [];
+      tabTriggerEls = [];
+      
       for (let i = 0; i < this.containerElement.length; i++) {
         triggerEls.push(...this.containerElement[i].querySelectorAll(this.triggerSelector));
+        if (this.opts.tabTriggerSelector) {
+            tabTriggerEls.push(...this.containerElement[i].querySelectorAll(this.opts.tabTriggerSelector));
+        }
+      }
+
+      // If we're doing tabs...
+      if (this.tabsContainerElement) {
+          triggerEls.push(...this.tabsContainerElement.querySelectorAll(this.triggerSelector));
+          tabTriggerEls.push(...this.tabsContainerElement.querySelectorAll(this.opts.tabTriggerSelector));
       }
     }
-
+    
     for (let i = 0; i < triggerEls.length; i++) {
       let el = triggerEls[i];
       el.addEventListener('click', e => {
@@ -126,6 +131,19 @@ class Transito {
         el.addEventListener('mouseover', e => {
             this.load(e.currentTarget.getAttribute('href'), html => {});
         });
+      }
+    }
+    
+    for (let i = 0; i < tabTriggerEls.length; i++) {
+      let el = tabTriggerEls[i];
+      el.addEventListener('click', e => {
+          this.openTab(e.currentTarget.getAttribute('href'));
+          e.preventDefault();
+      });
+      if (this.opts.preload) {
+          el.addEventListener('mouseover', e => {
+              this.load(e.currentTarget.getAttribute('href'), html => {});
+          });
       }
     }
   }
@@ -141,19 +159,120 @@ class Transito {
     };
   }
 
-  goTo(path) {
-
-    if (this.ready) {
-      if (this.opts.affectHistory) {
-        window.history.pushState({transitoId: this.id}, '', path);
-        this.route();
+  historyChange(e) {
+      if (e.state.tab) {
+          this.routeTab();
       } else {
-        this.route({
-          path: path,
-          hash: null
-        });
+        this.route();
       }
+  }
+  
+  initHistory() {
+      let tabElement = null;
+      if (this.opts.tabElementSelector) {
+          tabElement = document.body.querySelector(this.opts.tabElementSelector);
+      }
+      if (tabElement) {
+          this.tabs[currentRequest.path] = tabElement;
+      }
+      
+      if (this.opts.affectHistory) {
+          
+          let path = currentRequest.path;
+          
+          if (currentRequest.hash) {
+              path += '#'+currentRequest.hash;
+          }
+          
+          if (tabElement) {
+              window.history.replaceState({transitoId: this.id, tab: path}, '', path);
+          } else {
+              window.history.replaceState({transitoId: this.id}, '', path);
+          
+          }
+          
+          window.addEventListener('popstate', e => {
+              if (e.state && e.state.transitoId === this.id) {
+                  this.historyChange(e);
+              }
+          });
+      }
+  }
+  
+  openTab(path) {
+    if (this.ready) {
+        if (this.opts.affectHistory) {
+            window.history.pushState({transitoId: this.id, tab: path}, '', path);
+            this.routeTab();
+        } else {
+            this.routeTab({path: path, hash: null});
+        }
     }
+  }
+  
+  goTo(path) {
+    if (this.ready) {
+        if (this.opts.affectHistory) {
+            window.history.pushState({transitoId: this.id}, '', path);
+            this.route();
+        } else {
+            this.route({
+                path: path,
+                hash: null
+            });
+        }
+    }
+  }
+  
+  routeTab(request = null) {
+      
+      newRequest = request || this.parseRequest();
+      
+      if (! this.opts.affectHistory || currentRequest.path !== newRequest.path) {
+          
+          this.trigger('preload', {
+              currentPath: currentRequest.path,
+              newPath: newRequest.path
+          });
+          
+          this.ready = false;
+          
+          if (this.tabs[newRequest.path]) {
+              
+              this.setActiveTab(newRequest.path);
+              
+              oldRequest = currentRequest;
+              currentRequest = newRequest;
+              
+              this.ready = true;
+              
+          } else {
+              this.load(newRequest.path, html => {
+                  
+                  this.trigger('receivedresponse', {
+                      response: html,
+                      currentPath: currentRequest.path,
+                      newPath: newRequest.path
+                  });
+                  
+                  Promise.all(this.promises).then(() => {
+                      
+                      oldRequest = currentRequest;
+                      currentRequest = newRequest;
+                      
+                      this.tabs[newRequest.path] = this.installTabHtml(html);
+                      this.setActiveTab(newRequest.path);
+    
+                      requestAnimationFrame(() => {
+                          requestAnimationFrame(() => {
+                              document.body.classList.remove(this.opts.classLoading);
+                          });
+                      });
+                      this.ready = true;
+                  });
+              });
+          }
+      }
   }
 
   route(request = null) {
@@ -161,7 +280,7 @@ class Transito {
     this.now = Date.now();
     newRequest = request || this.parseRequest();
 
-    if (!this.opts.affectHistory || currentRequest.path !== newRequest.path) {
+    if (! this.opts.affectHistory || currentRequest.path !== newRequest.path) {
 
       this.trigger('preload', {
         currentPath: currentRequest.path,
@@ -190,7 +309,7 @@ class Transito {
 
           setTimeout(() => {
 
-              this.swapHtml(html);
+              this.installHtml(html);
 
               requestAnimationFrame(() => {
                 requestAnimationFrame(() => {
@@ -249,46 +368,64 @@ class Transito {
     req.send(null);
   }
 
-  swapHtml(htmlString) {
+  installTabHtml(htmlString) {
+      const title = htmlString.match(/<title[^>]*>([^<]+)<\/title>/);
+      
+      if (title) {
+          document.title = decodeHtmlEntities(title[1]);
+      }
+
+      let content = this.getElementsFromString(htmlString, this.opts.tabElementSelector)[0];
+      let tabContainer = document.querySelector(this.opts.tabContainerElementSelector);
+      
+      if (! tabContainer || ! content) {
+          return null;
+      }
+      
+      tabContainer.appendChild(content);
+      this.bindEvents();
+      
+      return content;
+  }
+  
+  setActiveTab(path) {
+      
+      let tabElement = this.tabs[path];
+      
+      if (! tabElement) {
+          return;
+      }
+      
+      let tabContainer = document.querySelector(this.opts.tabContainerElementSelector);
+      if (tabContainer) {
+          let tabElements = tabContainer.querySelectorAll(this.opts.tabElementSelector);
+          for (let i = 0; i < tabElements.length; i++) {
+              tabElements[i].classList.remove(this.opts.classActiveTab);
+          }
+      }
+      tabElement.classList.add(this.opts.classActiveTab);
+  }
+  
+  closeTabs() {
+      let tabContainer = document.querySelector(this.opts.tabContainerElementSelector);
+      if (tabContainer) {
+          let tabElements = tabContainer.querySelectorAll(this.opts.tabElementSelector);
+          for (let i = 0; i < tabElements.length; i++) {
+              tabElements[i].classList.remove(this.opts.classActiveTab);
+          }
+      }
+  }
+  
+  installHtml(htmlString) {
 
     const title = htmlString.match(/<title[^>]*>([^<]+)<\/title>/);
 
     if (title) {
       document.title = decodeHtmlEntities(title[1]);
     }
-
-    const body = /<body.*?>([\s\S]*)<\/body>/.exec(htmlString)[1];
-    const tempContainer = document.createElement('div');
-    tempContainer.innerHTML = body;
-
-    let contents;
-    if (this.opts.originContainerElementSelector === 'body') {
-      contents = [tempContainer]; // We create an array from the element, so we can handle it (mostly) like a NodeList
-    } else {
-      contents = tempContainer.querySelectorAll(this.opts.originContainerElementSelector);
-    }
-
-    for (let i = 0; i < this.containerElement.length; i++) {
-
-      while (this.containerElement[i].firstChild) {
-        this.containerElement[i].removeChild(this.containerElement[i].firstChild);
-      }
-
-      if (contents[i]) {
-
-        // // We create a document fragment to append all childs at once
-        let docFrag = new DocumentFragment();
-
-        while (contents[i].childNodes.length > 0) {
-          // Add childnodes to document fragment
-          docFrag.appendChild(contents[i].childNodes[0]);
-        }
-
-        // Append document fragment
-        this.containerElement[i].appendChild(docFrag);
-      }
-    }
-
+    
+    let contents = this.getElementsFromString(htmlString, this.opts.originContainerElementSelector);
+    this.replaceChilds(this.containerElement, contents);
     this.bindEvents();
 
     this.trigger('postload', {
@@ -297,11 +434,46 @@ class Transito {
       response: htmlString
     });
   }
+  
+  replaceChilds(parents, newParents) {
+      for (let i = 0; i < parents.length; i++) {
+          // Empty the parent
+          while (parents[i].firstChild) {
+              parents[i].removeChild(parents[i].firstChild);
+          }
+          // Check if we have a corresponding new parent
+          if (newParents[i]) {
+              this.appendAllNodes(parents[i], newParents[i].childNodes);
+          }
+      }
+  }
+  
+  appendAllNodes(parent, nodes) {
+      // We create a document fragment to append all childs at once
+      let docFrag = new DocumentFragment();
+      while (nodes.length > 0) {
+          // Add childnodes to document fragment
+          docFrag.appendChild(nodes[0]);
+      }
+      // Append document fragment
+      parent.appendChild(docFrag);
+  }
+  
+  getElementsFromString(htmlString, selector) {
+      const body = /<body.*?>([\s\S]*)<\/body>/.exec(htmlString)[1];
+      const tempContainer = document.createElement('div');
+      tempContainer.innerHTML = body;
+      return (selector === 'body' ? [tempContainer] : tempContainer.querySelectorAll(selector));
+  }
 
+  installPlugin(plugin) {
+    plugin.install(this);
+  }
+  
   emptyPromises() {
     this.promises = [];
   }
-
+  
   setPromises(promises = []) {
     this.promises = promises;
   }
