@@ -1,6 +1,6 @@
 "use strict";
 
-import { Transito, PreloadImagesPlugin, BodyClassesPlugin } from '../src/index';
+import { Transito, PreloadImagesPlugin, BodyClassesPlugin } from '../dist/transito.bundle';
 
 const base = document.querySelector('base').getAttribute('href');
 

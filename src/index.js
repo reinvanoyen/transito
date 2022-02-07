@@ -2,11 +2,13 @@
 
 import PreloadImagesPlugin from "./plugins/preload-images";
 import BodyClassesPlugin from "./plugins/body-classes";
-import {decodeHtmlEntities} from "./util";
+import { decodeHtmlEntities } from "./util";
 
 /**
+ * 
  * @module transito
  * @author Rein Van Oyen
+ * 
  */
 
 let transitoId = 0;
