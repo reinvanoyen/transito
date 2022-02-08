@@ -249,7 +249,8 @@ class Transito {
           
           this.trigger('preload', {
               currentPath: currentRequest.path,
-              newPath: newRequest.path
+              newPath: newRequest.path,
+              tab: true
           });
           
           this.ready = false;
@@ -269,7 +270,8 @@ class Transito {
                   this.trigger('receivedresponse', {
                       response: html,
                       currentPath: currentRequest.path,
-                      newPath: newRequest.path
+                      newPath: newRequest.path,
+                      tab: true
                   });
                   
                   Promise.all(this.promises).then(() => {
@@ -310,7 +312,8 @@ class Transito {
 
       this.trigger('preload', {
         currentPath: currentRequest.path,
-        newPath: newRequest.path
+        newPath: newRequest.path,
+        tab: false
       });
 
       this.ready = false;
@@ -324,7 +327,8 @@ class Transito {
         this.trigger('receivedresponse', {
             response: html,
             currentPath: currentRequest.path,
-            newPath: newRequest.path
+            newPath: newRequest.path,
+            tab: false
         });
 
         Promise.all(this.promises).then(() => {
@@ -413,6 +417,14 @@ class Transito {
       tabContainer.appendChild(content);
       this.bindEvents();
       
+      this.trigger('postload', {
+          currentPath: currentRequest.path,
+          oldPath: oldRequest.path,
+          response: htmlString,
+          element: content,
+          tab: true
+      });
+      
       return content;
   }
   
@@ -459,7 +471,8 @@ class Transito {
     this.trigger('postload', {
       currentPath: currentRequest.path,
       oldPath: oldRequest.path,
-      response: htmlString
+      response: htmlString,
+      tab: false
     });
   }
   
