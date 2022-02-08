@@ -50,6 +50,7 @@ class Transito {
     this.cached = {};
     this.eventListeners = {};
     this.tabs = {};
+    this.lastPath = null;
 
     currentRequest = this.parseRequest();
     newRequest = null;
@@ -60,6 +61,9 @@ class Transito {
 
     this.ready = true;
 
+    this.onGoTo = this.handleGoTo.bind(this);
+    this.onOpenTab = this.handleOpenTab.bind(this);
+    this.onMouseOver = this.handleMouseover.bind(this);
     this.bindEvents(true);
 
     this.id = transitoId;
@@ -125,29 +129,37 @@ class Transito {
     
     for (let i = 0; i < triggerEls.length; i++) {
       let el = triggerEls[i];
-      el.addEventListener('click', e => {
-          this.goTo(e.currentTarget.getAttribute('href'));
-          e.preventDefault();
-      });
+      el.removeEventListener('click', this.onGoTo);
+      el.addEventListener('click', this.onGoTo);
       if (this.opts.preload) {
-        el.addEventListener('mouseover', e => {
-            this.load(e.currentTarget.getAttribute('href'), html => {});
-        });
+        el.removeEventListener('mouseover', this.onMouseOver);
+        el.addEventListener('mouseover', this.onMouseOver);
       }
     }
     
     for (let i = 0; i < tabTriggerEls.length; i++) {
       let el = tabTriggerEls[i];
-      el.addEventListener('click', e => {
-          this.openTab(e.currentTarget.getAttribute('href'));
-          e.preventDefault();
-      });
+        el.removeEventListener('click', this.onOpenTab);
+        el.addEventListener('click', this.onOpenTab);
       if (this.opts.preload) {
-          el.addEventListener('mouseover', e => {
-              this.load(e.currentTarget.getAttribute('href'), html => {});
-          });
+          el.removeEventListener('mouseover', this.onMouseOver);
+          el.addEventListener('mouseover', this.onMouseOver);
       }
     }
+  }
+  
+  handleGoTo(e) {
+      this.goTo(e.currentTarget.getAttribute('href'));
+      e.preventDefault();
+  }
+  
+  handleOpenTab(e) {
+      this.openTab(e.currentTarget.getAttribute('href'));
+      e.preventDefault();
+  }
+  
+  handleMouseover(e) {
+      this.load(e.currentTarget.getAttribute('href'), html => {});
   }
 
   parseRequest() {
@@ -170,12 +182,15 @@ class Transito {
   }
   
   initHistory() {
+      
       let tabElement = null;
       if (this.opts.tabElementSelector) {
           tabElement = document.body.querySelector(this.opts.tabElementSelector);
       }
       if (tabElement) {
           this.tabs[currentRequest.path] = tabElement;
+      } else {
+          this.lastPath = currentRequest.path;
       }
       
       if (this.opts.affectHistory) {
@@ -190,7 +205,6 @@ class Transito {
               window.history.replaceState({transitoId: this.id, tab: path}, '', path);
           } else {
               window.history.replaceState({transitoId: this.id}, '', path);
-          
           }
           
           window.addEventListener('popstate', e => {
@@ -223,12 +237,14 @@ class Transito {
                 hash: null
             });
         }
+        this.lastPath = path;
     }
   }
   
   routeTab(request = null) {
       
       newRequest = request || this.parseRequest();
+      
       
       if (! this.opts.affectHistory || currentRequest.path !== newRequest.path) {
           
@@ -282,6 +298,13 @@ class Transito {
     this.now = Date.now();
     newRequest = request || this.parseRequest();
 
+    if (newRequest.path === this.lastPath) {
+        this.closeTabs();
+        oldRequest = currentRequest;
+        currentRequest = newRequest;
+        return;
+    }
+    
     if (! this.opts.affectHistory || currentRequest.path !== newRequest.path) {
 
       this.trigger('preload', {
