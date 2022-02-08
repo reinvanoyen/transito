@@ -237,7 +237,6 @@ class Transito {
                 hash: null
             });
         }
-        this.lastPath = path;
     }
   }
   
@@ -297,11 +296,13 @@ class Transito {
 
     this.now = Date.now();
     newRequest = request || this.parseRequest();
-
+    
     if (newRequest.path === this.lastPath) {
         this.closeTabs();
         oldRequest = currentRequest;
         currentRequest = newRequest;
+        this.lastPath = newRequest.path;
+        
         return;
     }
     
@@ -317,7 +318,9 @@ class Transito {
       document.body.classList.add(this.opts.classLoading);
 
       this.load(newRequest.path, html => {
-
+          
+        this.lastPath = newRequest.path;
+        
         this.trigger('receivedresponse', {
             response: html,
             currentPath: currentRequest.path,

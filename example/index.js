@@ -12,8 +12,8 @@ let transito = new Transito(base, '#wrapper, #header', 'a:not(.open-tab)', {
     tabContainerElementSelector: '.tabs'
 });
 
-// transito.installPlugin(PreloadImagesPlugin);
-// transito.installPlugin(BodyClassesPlugin);
+transito.installPlugin(PreloadImagesPlugin);
+transito.installPlugin(BodyClassesPlugin);
 
 //transito.on('preload', e => console.log(e));
 transito.on('preload', e => {
