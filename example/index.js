@@ -17,6 +17,7 @@ transito.installPlugin(BodyClassesPlugin);
 
 //transito.on('preload', e => console.log(e));
 transito.on('preload', e => {
+    console.log('preload');
     transito.closeTabs();
 });
 

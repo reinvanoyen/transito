@@ -244,7 +244,6 @@ class Transito {
       
       newRequest = request || this.parseRequest();
       
-      
       if (! this.opts.affectHistory || currentRequest.path !== newRequest.path) {
           
           this.trigger('preload', {
@@ -299,15 +298,6 @@ class Transito {
     this.now = Date.now();
     newRequest = request || this.parseRequest();
     
-    if (newRequest.path === this.lastPath) {
-        this.closeTabs();
-        oldRequest = currentRequest;
-        currentRequest = newRequest;
-        this.lastPath = newRequest.path;
-        
-        return;
-    }
-    
     if (! this.opts.affectHistory || currentRequest.path !== newRequest.path) {
 
       this.trigger('preload', {
@@ -315,7 +305,16 @@ class Transito {
         newPath: newRequest.path,
         tab: false
       });
-
+      
+      if (newRequest.path === this.lastPath) {
+        this.closeTabs();
+        oldRequest = currentRequest;
+        currentRequest = newRequest;
+        this.lastPath = newRequest.path;
+        
+        return;
+      }
+      
       this.ready = false;
 
       document.body.classList.add(this.opts.classLoading);
