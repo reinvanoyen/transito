@@ -261,6 +261,14 @@ class Transito {
               oldRequest = currentRequest;
               currentRequest = newRequest;
               
+              this.trigger('postload', {
+                  currentPath: currentRequest.path,
+                  oldPath: oldRequest.path,
+                  response: '',
+                  element: this.tabs[newRequest.path],
+                  tab: true
+              });
+              
               this.ready = true;
               
           } else {
@@ -307,10 +315,18 @@ class Transito {
       });
       
       if (newRequest.path === this.lastPath) {
+          
         this.closeTabs();
         oldRequest = currentRequest;
         currentRequest = newRequest;
         this.lastPath = newRequest.path;
+
+        this.trigger('postload', {
+          currentPath: currentRequest.path,
+          oldPath: oldRequest.path,
+          response: '',
+          tab: false
+        });
         
         return;
       }
