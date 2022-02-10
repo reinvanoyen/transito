@@ -15,6 +15,10 @@ let transito = new Transito(base, '#wrapper, #header', 'a:not(.open-tab)', {
 transito.installPlugin(PreloadImagesPlugin);
 transito.installPlugin(BodyClassesPlugin);
 
+transito.on('init', e => {
+    console.log('init', e);
+});
+
 transito.on('postload', e => {
     console.log('postload', e)
 });

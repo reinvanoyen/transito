@@ -49,40 +49,46 @@ class Transito {
     this.promises = [];
     this.cached = {};
     this.eventListeners = {};
+    this.eventQueue = {};
     this.tabs = {};
     this.lastPath = null;
 
     currentRequest = this.parseRequest();
     newRequest = null;
     oldRequest = null;
-
+    
     this.containerElement = document.querySelectorAll(this.containerElementSelector);
     this.tabsContainerElement = document.querySelector(this.opts.tabContainerElementSelector);
-
+    
     this.ready = true;
-
+    
     this.onGoTo = this.handleGoTo.bind(this);
     this.onOpenTab = this.handleOpenTab.bind(this);
     this.onMouseOver = this.handleMouseover.bind(this);
-    this.bindEvents(true);
 
     this.id = transitoId;
     transitoId++;
 
-    this.initHistory();
+    this.init();
   }
 
   /**
    * Trigger an internal event by name
    * @param  {String} eventName - The name of the event to trigger
    * @param  {Object} event - The event (which can contain any data you want)
+   * @param  {Boolean} queued
    * @return {void}
    */
-  trigger(eventName, event = {}) {
+  trigger(eventName, event = {}, queued = false) {
     if (this.eventListeners[eventName]) {
       this.eventListeners[eventName].forEach( cb => {
         cb(event);
       });
+    } else if (queued) {
+        if (! this.eventQueue[eventName]) {
+            this.eventQueue[eventName] = [];
+        }
+        this.eventQueue[eventName].push(event);
     }
   }
 
@@ -96,6 +102,14 @@ class Transito {
       this.eventListeners[eventName] = [];
     }
     this.eventListeners[eventName].push(cb);
+    
+    // Check if there's events registered in the queue
+    if (this.eventQueue[eventName]) {
+        while (this.eventQueue[eventName].length) {
+            cb(this.eventQueue[eventName][0]);
+            this.eventQueue[eventName].shift();
+        }
+    }
   }
   
   bindEvents(initial = false) {
@@ -181,25 +195,39 @@ class Transito {
       }
   }
   
-  initHistory() {
+  init() {
       
-      let tabElement = null;
-      if (this.opts.tabElementSelector) {
-          tabElement = document.body.querySelector(this.opts.tabElementSelector);
-      }
+      this.bindEvents(true);
+      
+      let tabElement = (this.opts.tabElementSelector ? document.body.querySelector(this.opts.tabElementSelector) : null);
+      
       if (tabElement) {
+          
+          // Store the tab
           this.tabs[currentRequest.path] = tabElement;
+          
+          // Trigger the init event for tab initialisation
+          this.trigger('init', {
+              currentPath: currentRequest.path,
+              tab: true,
+              element: tabElement
+          }, true);
+          
       } else {
+          
+          // Set the last path
           this.lastPath = currentRequest.path;
+
+          // Trigger the init event for non-tab initialisation
+          this.trigger('init', {
+              currentPath: currentRequest.path,
+              tab: false
+          }, true);
       }
       
       if (this.opts.affectHistory) {
           
-          let path = currentRequest.path;
-          
-          if (currentRequest.hash) {
-              path += '#'+currentRequest.hash;
-          }
+          let path = currentRequest.path+(currentRequest.hash ? '#'+currentRequest.hash : '');
           
           if (tabElement) {
               window.history.replaceState({transitoId: this.id, tab: path}, '', path);
@@ -208,6 +236,7 @@ class Transito {
           }
           
           window.addEventListener('popstate', e => {
+              // Only do the history change when we know it's coming from this transito instance
               if (e.state && e.state.transitoId === this.id) {
                   this.historyChange(e);
               }
