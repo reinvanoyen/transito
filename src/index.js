@@ -491,8 +491,22 @@ class Transito {
   }
 
   closeTabsExcept(path) {
-      this.closeTabs();
-      this.setActiveTab(path);
+
+      let tabElement = this.tabs[path];
+      if (! tabElement) {
+          this.closeTabs();
+          return;
+      }
+
+      let tabContainer = document.querySelector(this.opts.tabContainerElementSelector);
+      if (tabContainer) {
+          let tabElements = tabContainer.querySelectorAll(this.opts.tabElementSelector);
+          for (let i = 0; i < tabElements.length; i++) {
+              if (tabElements[i] !== tabElement) {
+                tabElements[i].classList.remove(this.opts.classActiveTab);
+              }
+          }
+      }
   }
   
   installHtml(htmlString) {
