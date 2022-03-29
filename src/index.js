@@ -473,19 +473,9 @@ class Transito {
   }
   
   setActiveTab(path) {
-      
       let tabElement = this.tabs[path];
-      
       if (! tabElement) {
           return;
-      }
-      
-      let tabContainer = document.querySelector(this.opts.tabContainerElementSelector);
-      if (tabContainer) {
-          let tabElements = tabContainer.querySelectorAll(this.opts.tabElementSelector);
-          for (let i = 0; i < tabElements.length; i++) {
-              tabElements[i].classList.remove(this.opts.classActiveTab);
-          }
       }
       tabElement.classList.add(this.opts.classActiveTab);
   }
@@ -498,6 +488,11 @@ class Transito {
               tabElements[i].classList.remove(this.opts.classActiveTab);
           }
       }
+  }
+
+  closeTabsExcept(path) {
+      this.closeTabs();
+      this.setActiveTab(path);
   }
   
   installHtml(htmlString) {

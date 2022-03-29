@@ -30,7 +30,7 @@ body.loading .block
     bottom: 0;
     left: 0;
     right: 0;
-    height: 50vh;
+    height: 70vh;
     background-color: #c0c0c0;
     color: white;
     font-size: 30px;
@@ -41,6 +41,11 @@ body.loading .block
 .tab-1
 {
     background-color: #999;
+}
+
+.tab-2
+{
+    height: 30vh;
 }
 
 .active-tab

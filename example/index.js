@@ -20,11 +20,24 @@ transito.on('init', e => {
 });
 
 transito.on('postload', e => {
-    console.log('postload', e)
+    
+    if (e.tab) {
+        let el = e.element;
+        
+        if (el.classList.contains('tab-1')) {
+            transito.closeTabsExcept(e.currentPath);
+        } else {
+            // Close nothing
+        }
+    } else {
+        console.log('yes');
+        transito.closeTabs();
+    }
 });
+
 transito.on('preload', e => {
-    console.log('preload', e);
-    transito.closeTabs();
+    console.log('preload!', e);
+    //transito.closeTabs();
 });
 
 console.log('change!!');
