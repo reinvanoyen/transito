@@ -16,7 +16,7 @@ transito.installPlugin(PreloadImagesPlugin);
 transito.installPlugin(BodyClassesPlugin);
 
 transito.on('init', e => {
-    console.log('init', e);
+    //console.log('init', e);
 });
 
 transito.on('postload', e => {
@@ -30,14 +30,12 @@ transito.on('postload', e => {
             // Close nothing
         }
     } else {
-        console.log('yes');
+        console.log('its not a tab');
         transito.closeTabs();
     }
 });
 
 transito.on('preload', e => {
-    console.log('preload!', e);
+    //console.log('preload!', e);
     //transito.closeTabs();
 });
-
-console.log('change!!');

@@ -59,7 +59,7 @@ class Transito {
     
     this.containerElement = document.querySelectorAll(this.containerElementSelector);
     this.tabsContainerElement = document.querySelector(this.opts.tabContainerElementSelector);
-    
+    this.tabZIndex = 1;
     this.ready = true;
     
     this.onGoTo = this.handleGoTo.bind(this);
@@ -205,6 +205,7 @@ class Transito {
           
           // Store the tab
           this.tabs[currentRequest.path] = tabElement;
+          this.setActiveTab(currentRequest.path);
           
           // Trigger the init event for tab initialisation
           this.trigger('init', {
@@ -301,6 +302,7 @@ class Transito {
               this.ready = true;
               
           } else {
+              
               this.load(newRequest.path, html => {
                   
                   this.trigger('receivedresponse', {
@@ -445,6 +447,7 @@ class Transito {
   }
 
   installTabHtml(htmlString) {
+      
       const title = htmlString.match(/<title[^>]*>([^<]+)<\/title>/);
       
       if (title) {
@@ -459,6 +462,7 @@ class Transito {
       }
       
       tabContainer.appendChild(content);
+      
       this.bindEvents();
       
       this.trigger('postload', {
@@ -473,10 +477,16 @@ class Transito {
   }
   
   setActiveTab(path) {
+      
       let tabElement = this.tabs[path];
       if (! tabElement) {
           return;
       }
+      
+      if (! tabElement.classList.contains(this.opts.classActiveTab)) {
+        tabElement.style.zIndex = this.tabZIndex++;
+      }
+      
       tabElement.classList.add(this.opts.classActiveTab);
   }
   
