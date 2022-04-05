@@ -36,6 +36,7 @@ class Transito {
       classLoading: 'loading',
       originContainerElementSelector: containerElementSelector,
       affectHistory: true,
+      includeElementsInEvent: null,
       
       // Tab functionality
       tabTriggerSelector: null,
@@ -61,6 +62,8 @@ class Transito {
     this.tabsContainerElement = document.querySelector(this.opts.tabContainerElementSelector);
     this.tabZIndex = 1;
     this.ready = true;
+    
+    this.cachedIncludedElements = {};
     
     this.onGoTo = this.handleGoTo.bind(this);
     this.onOpenTab = this.handleOpenTab.bind(this);
@@ -296,6 +299,7 @@ class Transito {
                   oldPath: oldRequest.path,
                   response: '',
                   element: this.tabs[newRequest.path],
+                  includedElements: this.cachedIncludedElements[currentRequest.path] || [],
                   tab: true
               });
               
@@ -356,6 +360,7 @@ class Transito {
           currentPath: currentRequest.path,
           oldPath: oldRequest.path,
           response: '',
+          includedElements: this.cachedIncludedElements[currentRequest.path] || [],
           tab: false
         });
         
@@ -462,6 +467,12 @@ class Transito {
       }
       
       tabContainer.appendChild(content);
+
+      let includedElements = [];
+      if (this.opts.includeElementsInEvent) {
+          includedElements = this.getElementsFromString(htmlString, this.opts.includeElementsInEvent);
+          this.cachedIncludedElements[currentRequest.path] = includedElements;
+      }
       
       this.bindEvents();
       
@@ -470,6 +481,7 @@ class Transito {
           oldPath: oldRequest.path,
           response: htmlString,
           element: content,
+          includedElements: includedElements,
           tab: true
       });
       
@@ -530,11 +542,18 @@ class Transito {
     let contents = this.getElementsFromString(htmlString, this.opts.originContainerElementSelector);
     this.replaceChilds(this.containerElement, contents);
     this.bindEvents();
+    
+    let includedElements = [];
+    if (this.opts.includeElementsInEvent) {
+        includedElements = this.getElementsFromString(htmlString, this.opts.includeElementsInEvent);
+        this.cachedIncludedElements[currentRequest.path] = includedElements;
+    }
 
     this.trigger('postload', {
       currentPath: currentRequest.path,
       oldPath: oldRequest.path,
       response: htmlString,
+      includedElements: includedElements,
       tab: false
     });
   }

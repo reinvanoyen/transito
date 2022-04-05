@@ -5,8 +5,9 @@ import { Transito, PreloadImagesPlugin, BodyClassesPlugin } from '../dist/transi
 const base = document.querySelector('base').getAttribute('href');
 
 // main
-let transito = new Transito(base, '#wrapper, #header', 'a:not(.open-tab)', {
+let transito = new Transito(base, '#wrapper', 'a:not(.open-tab)', {
     minDuration: 3000,
+    includeElementsInEvent: '#header',
     tabTriggerSelector: '.open-tab',
     tabElementSelector: '.tab',
     tabContainerElementSelector: '.tabs'
@@ -21,6 +22,19 @@ transito.on('init', e => {
 
 transito.on('postload', e => {
     
+    console.log(e.includedElements);
+    
+    if (e.includedElements && e.includedElements.length) {
+        
+        console.log('replace');
+        
+        let header = document.querySelector('#header');
+        if (header) {
+            let parent = header.parentNode;
+            parent.replaceChild(e.includedElements[0], header);
+        }
+    }
+    
     if (e.tab) {
         let el = e.element;
         
@@ -30,7 +44,6 @@ transito.on('postload', e => {
             // Close nothing
         }
     } else {
-        console.log('its not a tab');
         transito.closeTabs();
     }
 });
