@@ -203,6 +203,10 @@ class Transito {
       this.bindEvents(document, true);
       
       let tabElement = (this.opts.tabElementSelector ? document.body.querySelector(this.opts.tabElementSelector) : null);
+
+      // Include elements
+      let includedElements = (this.opts.includeElementsInEvent ? document.body.querySelectorAll(this.opts.includeElementsInEvent) : []);
+      this.cachedIncludedElements[currentRequest.path] = includedElements;
       
       if (tabElement) {
           
@@ -214,7 +218,8 @@ class Transito {
           this.trigger('init', {
               currentPath: currentRequest.path,
               tab: true,
-              element: tabElement
+              includedElements: includedElements,
+              element: tabElement,
           }, true);
           
       } else {
@@ -225,6 +230,7 @@ class Transito {
           // Trigger the init event for non-tab initialisation
           this.trigger('init', {
               currentPath: currentRequest.path,
+              includedElements: includedElements,
               tab: false
           }, true);
       }
