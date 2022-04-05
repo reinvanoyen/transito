@@ -115,18 +115,18 @@ class Transito {
     }
   }
   
-  bindEvents(initial = false) {
+  bindEvents(scope, initial = false) {
 
     let triggerEls;
     let tabTriggerEls;
 
     if (initial) {
-        
-      triggerEls = document.body.querySelectorAll(this.triggerSelector);
-      tabTriggerEls = this.opts.tabTriggerSelector ? document.body.querySelectorAll(this.opts.tabTriggerSelector) : null;
+      
+      triggerEls = scope.querySelectorAll(this.triggerSelector);
+      tabTriggerEls = this.opts.tabTriggerSelector ? scope.querySelectorAll(this.opts.tabTriggerSelector) : null;
       
     } else {
-        
+      
       triggerEls = [];
       tabTriggerEls = [];
       
@@ -200,7 +200,7 @@ class Transito {
   
   init() {
       
-      this.bindEvents(true);
+      this.bindEvents(document, true);
       
       let tabElement = (this.opts.tabElementSelector ? document.body.querySelector(this.opts.tabElementSelector) : null);
       
@@ -422,6 +422,19 @@ class Transito {
     hashEl.scrollIntoView();
   }
 
+  getIncludedElementsFromHtmlString(htmlString) {
+      let includedElements = [];
+      if (this.opts.includeElementsInEvent) {
+          includedElements = this.getElementsFromString(htmlString, this.opts.includeElementsInEvent);
+          for (let i = 0; i < includedElements.length; i++) {
+              this.bindEvents(includedElements[i], true);
+          }
+          this.cachedIncludedElements[currentRequest.path] = includedElements;
+      }
+      
+      return includedElements;
+  }
+  
   load(path, cb) {
 
     if (this.opts.cache && this.cached[path]) {
@@ -467,21 +480,15 @@ class Transito {
       }
       
       tabContainer.appendChild(content);
-
-      let includedElements = [];
-      if (this.opts.includeElementsInEvent) {
-          includedElements = this.getElementsFromString(htmlString, this.opts.includeElementsInEvent);
-          this.cachedIncludedElements[currentRequest.path] = includedElements;
-      }
       
-      this.bindEvents();
+      this.bindEvents(document);
       
       this.trigger('postload', {
           currentPath: currentRequest.path,
           oldPath: oldRequest.path,
           response: htmlString,
           element: content,
-          includedElements: includedElements,
+          includedElements: this.getIncludedElementsFromHtmlString(htmlString),
           tab: true
       });
       
@@ -541,19 +548,13 @@ class Transito {
     
     let contents = this.getElementsFromString(htmlString, this.opts.originContainerElementSelector);
     this.replaceChilds(this.containerElement, contents);
-    this.bindEvents();
+    this.bindEvents(document);
     
-    let includedElements = [];
-    if (this.opts.includeElementsInEvent) {
-        includedElements = this.getElementsFromString(htmlString, this.opts.includeElementsInEvent);
-        this.cachedIncludedElements[currentRequest.path] = includedElements;
-    }
-
     this.trigger('postload', {
       currentPath: currentRequest.path,
       oldPath: oldRequest.path,
       response: htmlString,
-      includedElements: includedElements,
+      includedElements: this.getIncludedElementsFromHtmlString(htmlString),
       tab: false
     });
   }
