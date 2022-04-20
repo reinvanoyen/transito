@@ -22,12 +22,8 @@ transito.on('init', e => {
 
 transito.on('postload', e => {
     
-    console.log(e.includedElements);
-    
     if (e.includedElements && e.includedElements.length) {
-        
-        console.log('replace');
-        
+                
         let header = document.querySelector('#header');
         if (header) {
             let parent = header.parentNode;

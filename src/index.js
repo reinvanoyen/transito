@@ -64,6 +64,7 @@ class Transito {
     this.ready = true;
     
     this.cachedIncludedElements = {};
+    this.cachedBodyClasses = {};
     
     this.onGoTo = this.handleGoTo.bind(this);
     this.onOpenTab = this.handleOpenTab.bind(this);
@@ -207,6 +208,7 @@ class Transito {
       // Include elements
       let includedElements = (this.opts.includeElementsInEvent ? document.body.querySelectorAll(this.opts.includeElementsInEvent) : []);
       this.cachedIncludedElements[currentRequest.path] = includedElements;
+      this.cachedBodyClasses[currentRequest.path] = document.body.classList.value.split(' ');
       
       if (tabElement) {
           
@@ -306,6 +308,7 @@ class Transito {
                   response: '',
                   element: this.tabs[newRequest.path],
                   includedElements: this.cachedIncludedElements[currentRequest.path] || [],
+                  bodyClasses: this.cachedBodyClasses[currentRequest.path] || [],
                   tab: true
               });
               
@@ -367,6 +370,7 @@ class Transito {
           oldPath: oldRequest.path,
           response: '',
           includedElements: this.cachedIncludedElements[currentRequest.path] || [],
+          bodyClasses: this.cachedBodyClasses[currentRequest.path] || [],
           tab: false
         });
         
@@ -469,6 +473,17 @@ class Transito {
     req.open('GET', path, true);
     req.send(null);
   }
+  
+  getBodyClassesFromHtml(html) {
+      let classes = html.match(/body\sclass=['|"]([^'|"]*)['|"]/);
+      if (classes) {
+          let classesArr = classes[1].split(' ');
+          this.cachedBodyClasses[currentRequest.path] = classesArr;
+          return classesArr;
+      }
+      this.cachedBodyClasses[currentRequest.path] = [];
+      return [];
+  }
 
   installTabHtml(htmlString) {
       
@@ -495,6 +510,7 @@ class Transito {
           response: htmlString,
           element: content,
           includedElements: this.getIncludedElementsFromHtmlString(htmlString),
+          bodyClasses: this.getBodyClassesFromHtml(htmlString),
           tab: true
       });
       
@@ -561,6 +577,7 @@ class Transito {
       oldPath: oldRequest.path,
       response: htmlString,
       includedElements: this.getIncludedElementsFromHtmlString(htmlString),
+      bodyClasses: this.getBodyClassesFromHtml(htmlString),
       tab: false
     });
   }
