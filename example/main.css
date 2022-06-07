@@ -24,11 +24,6 @@ body.loading .block
     transition-delay: 0s;
 }
 
-@keyframes tab-open {
-    from { transform: translateY(100%); }
-    to { transform: translateY(0%); }
-}
-
 .tab
 {
     position: absolute;
@@ -58,5 +53,4 @@ body.loading .block
 {
     z-index: 9999;
     transform: translateY(0);
-    animation: tab-open 1s;
 }

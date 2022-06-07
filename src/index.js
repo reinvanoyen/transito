@@ -528,7 +528,9 @@ class Transito {
         tabElement.style.zIndex = this.tabZIndex++;
       }
       
-      tabElement.classList.add(this.opts.classActiveTab);
+      requestAnimationFrame(() => {
+          tabElement.classList.add(this.opts.classActiveTab);
+      });
   }
   
   closeTabs() {
