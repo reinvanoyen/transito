@@ -529,7 +529,9 @@ class Transito {
       }
       
       requestAnimationFrame(() => {
-          tabElement.classList.add(this.opts.classActiveTab);
+          requestAnimationFrame(() => {
+              tabElement.classList.add(this.opts.classActiveTab);
+          });
       });
   }
   
